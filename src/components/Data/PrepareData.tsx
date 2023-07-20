@@ -1,7 +1,8 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 
+import { SIZE_PREPARED_PACKAGE_TO_PHP } from '../../constants/settings';
 import { WebsocketContext } from '../../context/WebsocketContext';
-import { CalculateMode, WebSocketMessageData } from '../../types/data';
+import { CalculateMode, Quotations, WebSocketMessageData } from '../../types/data';
 import {
     calculateAverage,
     calculateMode,
@@ -26,13 +27,14 @@ function PrepareData({
     const [ready, val] = useContext(WebsocketContext);
     const [items, setItems] = useState<WebSocketMessageData[]>([]);
     const startAt = useRef<Date | number>(-1);
-    const workAt = useRef<number>(-1);
+    const workAt = useRef(-1);
     const batchSize = useRef<number>(0);
     const numberSlice = useRef<number>(0);
+    const prepareArr = useRef<Quotations[]>([]);
     const currentIndexSlice = useRef<number>(0);
     const [deviation, setDeviation] = useState<number | undefined>();
     const [average, setAverage] = useState<number | undefined>();
-    const [modes, setModes] = useState<CalculateMode | undefined>();
+    const [modes, setModes] = useState<CalculateMode>();
     const [maxValue, setMaxValue] = useState<number | undefined>();
     const [minValue, setMinValue] = useState<number | undefined>();
     const [missingQuotes, setMissingQuotes] = useState<number | undefined>();
@@ -54,14 +56,13 @@ function PrepareData({
     useEffect(() => {
         if ((priorityActions.priority && val) || (numberSlice.current >= batchSize.current && val)) {
             startAt.current = Date.now();
-
             const sliceGroup = items.slice(
                 currentIndexSlice.current,
                 currentIndexSlice.current + batchSize.current
             );
+            if (sliceGroup.length < 1) return;
 
             const batchSizeLoc = priorityActions.priority ? sliceGroup.length : batchSize.current;
-
             currentIndexSlice.current += batchSizeLoc;
             setAverage(calculateAverage(sliceGroup));
             setDeviation(calculateStandardDeviation(sliceGroup));
@@ -69,23 +70,46 @@ function PrepareData({
             setMaxValue(findMaxValue(sliceGroup));
             setMinValue(findMinValue(sliceGroup));
             setMissingQuotes(countMissingQuotes(sliceGroup, val));
-            sendData(sliceGroup, batchSizeLoc);
         }
     }, [items, priorityActions.priority]);
 
     useEffect(() => {
         if (
-            priorityActions.priority ||
-            (numberSlice.current >= batchSize.current &&
-                average &&
-                deviation &&
-                modes &&
-                maxValue &&
-                minValue)
+            (priorityActions.priority || numberSlice.current >= batchSize.current) &&
+            average !== undefined &&
+            deviation !== undefined &&
+            modes !== undefined &&
+            maxValue !== undefined &&
+            minValue !== undefined &&
+            missingQuotes !== undefined
         ) {
+            console.log('SENDED');
             const startTime = startAt.current as number;
             workAt.current = Date.now() - startTime;
+            const calculateTime: number = workAt.current;
+            prepareArr.current.push({
+                average,
+                deviation,
+                modes,
+                maxValue,
+                minValue,
+                missingQuotes,
+                startTime,
+                calculateTime,
+            });
+            const batchSizePrepare = priorityActions.priority
+                ? prepareArr.current.length
+                : SIZE_PREPARED_PACKAGE_TO_PHP;
+            if (priorityActions.priority || prepareArr.current.length === SIZE_PREPARED_PACKAGE_TO_PHP) {
+                sendData(prepareArr.current, batchSizePrepare);
+                prepareArr.current = [];
+            }
+
             numberSlice.current = 0;
+            if (priorityActions.priority) {
+                priorityActions.setPriority(false);
+            }
+        } else {
             if (priorityActions.priority) {
                 priorityActions.setPriority(false);
             }
@@ -105,9 +129,7 @@ function PrepareData({
                 </div>
                 <div className='modes min-h-[60px]'>
                     <p>Mode:</p>
-                    <p className='font-semibold'>
-                        {modes ? modes.mode + ' / Freq:' + modes.maxFrequency : '0'}
-                    </p>
+                    <p className='font-semibold'>{modes ? modes.total : '0'}</p>
                 </div>
                 <div className='max-value min-h-[60px]'>
                     <p>Max Value:</p>

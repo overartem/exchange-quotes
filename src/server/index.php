@@ -16,7 +16,7 @@ if ($conn->connect_error) {
 try {
   $data = json_decode(file_get_contents('php://input'));
   $conn->begin_transaction();
-  $stmt = $conn->prepare('INSERT INTO quotations(quota_id, quota_value) VALUES (?, ?)');
+  $stmt = $conn->prepare('INSERT INTO quotations(average, deviation, `mode`, `maxvalue`, `minvalue`, missing_quotes, `start_date`, calculate_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
 
   if ($stmt === false) {
     throw new Exception("Request execution error: " . $conn->error);
@@ -28,11 +28,17 @@ try {
     $calculations = $data->calculations;
     $batchSize = $data->batchsize;
 
-    foreach ($calculations as $item) {
-      $value1 = $item->id;
-      $value2 = $item->value;
+    foreach ($data->calculations as $calculations) {
+      $value1 = $calculations->average;
+      $value2 = $calculations->deviation;
+      $value3 = $calculations->modes->total;
+      $value4 = $calculations->maxValue;
+      $value5 = $calculations->minValue;
+      $value6 = $calculations->missingQuotes;
+      $value7 = $calculations->startTime;
+      $value8 = $calculations->calculateTime;
 
-      $stmt->bind_param('ii', $value1, $value2);
+      $stmt->bind_param('ddsddiii', $value1, $value2, $value3, $value4, $value5, $value6, $value7, $value8);
       $stmt->execute();
 
       $count++;

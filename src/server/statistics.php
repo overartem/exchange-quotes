@@ -10,7 +10,7 @@ function getQuotations($currentPage, $conn, $itemsPerPage)
 {
     $offset = ($currentPage - 1) * $itemsPerPage;
 
-    $query = "SELECT quota_id, quota_value FROM quotations ORDER BY id DESC LIMIT :limit OFFSET :offset";
+    $query = "SELECT id, average, deviation, `mode`, `maxvalue`, `minvalue`, missing_quotes, `start_date`, calculate_time FROM quotations ORDER BY id DESC LIMIT :limit OFFSET :offset";
     $stmt = $conn->prepare($query);
     $stmt->bindValue(':limit', $itemsPerPage, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);

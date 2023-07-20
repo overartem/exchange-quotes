@@ -1,7 +1,5 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
-import { debounce } from 'lodash';
-
 import { DataFromSql } from '../../../types/data';
 import { getStatistics } from '../../../utils/fetch';
 import { ConnectionNav } from '../../Connection/ConnectionNav';
@@ -18,15 +16,10 @@ function StatisticsLayout({ appActions }: { appActions: IAppActions }) {
     const [statistics, setStatistics] = useState<DataFromSql | undefined>();
     const [page, setPage] = useState<number>(0);
 
-    const showStatistics = debounce(() => {
+    const showStatistics = () => {
         const firstPage = page > 0 ? page : 1;
         fetchData(firstPage);
-    }, 500);
-
-    // const showStatistics = () => {
-    //     const firstPage = page > 0 ? page : 1;
-    //     fetchData(firstPage);
-    // };
+    };
 
     useEffect(() => {
         if (page > 0) fetchData(page);

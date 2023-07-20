@@ -12,8 +12,7 @@ export type UseWsHookReturnType = [
 ];
 
 export type CalculateMode = {
-    mode?: string | null,
-    maxFrequency?: number
+    total?: string | null
 }
 
 export type FrequencyMap = {
@@ -21,9 +20,14 @@ export type FrequencyMap = {
 }
 
 export type DataFromSql = {
-    quotations: {
-        quota_id:number,
-        quota_value:number,
-    }[],
+    quotations:SqlQuotations[],
     totalPages: number
+}
+
+export type Quotations = {
+    [key : string]: number | string | CalculateMode 
+}
+
+export type SqlQuotations = {
+    [key : string]: number | string
 }

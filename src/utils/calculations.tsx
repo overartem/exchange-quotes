@@ -17,9 +17,10 @@ export function calculateAverage(quotes: WebSocketMessageData[]): number | undef
     return mean;
 }
 
-export function calculateMode(quotes: WebSocketMessageData[]): CalculateMode | undefined {
+export function calculateMode(quotes: WebSocketMessageData[]): CalculateMode {
     const n = quotes.length;
-    if (n < 1) return;
+    let total = null;
+    if (n < 1) return { total };
     const frequencyMap: FrequencyMap = {};
 
     quotes.forEach((item: WebSocketMessageData) => {
@@ -40,7 +41,9 @@ export function calculateMode(quotes: WebSocketMessageData[]): CalculateMode | u
         }
     }
 
-    return { mode, maxFrequency };
+    total = `${mode} / Freq: ${maxFrequency}`;
+
+    return { total };
 }
 
 export function findMaxValue(quotes: WebSocketMessageData[]): number | undefined {

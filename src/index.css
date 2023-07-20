@@ -5,3 +5,7 @@
 .page-number.active {
     background: #e2e8f0;
 }
+
+.statistics-list div {
+    @apply flex justify-between;
+}

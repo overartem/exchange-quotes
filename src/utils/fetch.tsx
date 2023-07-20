@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 import { GET_FETCH_URL, POST_FETCH_URL } from '../constants/settings';
-import { WebSocketMessageData } from '../types/data';
+import { DataFromSql, Quotations } from '../types/data';
 
-export function sendData(calculations: WebSocketMessageData[], batchsize: number) {
+export function sendData(calculations: Quotations[], batchsize: number) {
     axios
         .post(POST_FETCH_URL, { calculations, batchsize })
         .then((response) => {
@@ -22,7 +22,7 @@ export function getStatistics(page: number) {
             },
         })
         .then((res) => {
-            const { quotations, totalPages } = res.data;
+            const { quotations, totalPages } = res.data as DataFromSql;
             return { quotations, totalPages };
         });
 }
