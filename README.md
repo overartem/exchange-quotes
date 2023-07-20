@@ -1,3 +1,15 @@
+### Зібрано на Vite
+------------------
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm run dev` :tada:
+or
+### `npm run build`
+or but before you have to run build || **Це команда для старту проекту на продукт білді** :exclamation:
+
+### `npm run preview` 
 # ТЗ
 
 За натисканням кнопки Старт React Веб-інтерфейс підключається до емулятора котирувань за адресою
